@@ -18,7 +18,11 @@
 // Version du fichier. Elle s'affiche dans le menu : si le numéro affiché
 // ne correspond pas à celui-ci, le navigateur sert encore une ancienne
 // copie en cache et il faut vider le cache ou changer le ?v= de l'index.
-const VERSION_UNITES = 'lezard-v4';
+const VERSION_UNITES = 'lezard-v5';
+
+// Compteurs de diagnostic : ils comptent ce que le lézard fait RÉELLEMENT
+// pendant la partie. Affichés à l'écran pour savoir où ça coince.
+let DIAG = {lezards:0, chasse:0, langue:0, griffes:0, prises:0, dessins:0};
 
 // ---------- LES CARTES : nom, prix, rareté, déblocage ----------
 const allUnits={
@@ -507,6 +511,10 @@ if(this.type==='richSkeleton'){
 // Trois temps enchaînés. La langue va chercher une cible hors de portée,
 // la ramène d'un coup sur la pointe du casque, puis le lézard l'achève.
 if(this.type==='lizard'){
+  DIAG.lezards++;
+  if(this.phase==='chasse')DIAG.chasse++;
+  if(this.phase==='langue')DIAG.langue++;
+  if(this.phase==='griffes')DIAG.griffes++;
   if(this.phase===undefined){ this.phase='chasse'; this.langueT=0; this.proie=null; this.recharge=0; }
   if(this.recharge>0) this.recharge--;
 
@@ -539,7 +547,7 @@ if(this.type==='lizard'){
       // Exiger une distance minimale le rendait inoffensif au corps à
       // corps, là où il passe justement le plus clair de son temps.
       if(this.recharge<=0){
-        this.phase='langue'; this.langueT=0; this.proie=proie;
+        this.phase='langue'; this.langueT=0; this.proie=proie; DIAG.prises++;
         this.langueAller=Math.max(LANGUE_ALLER_MIN, Math.round(best/LANGUE_VITESSE));
       }
     } else { this.reculeur=false; this.proieEnVue=false; }
@@ -1156,6 +1164,7 @@ if(t==='necromancer'||t==='bannerman'||t==='skeleton'||t==='skeletonCard'
   const bob=Math.sin(tk*0.12)*2;
   const yy=y+bob;
   if(t==='lizard'){
+    DIAG.dessins++;
     // --- LÉZARD À CASQUE ---
     // Dessin volontairement sobre : la version précédente multipliait les
     // tracés (écailles, griffes, dégradés) et faisait ramer le jeu dès
